@@ -40,14 +40,20 @@
     background-color: #007BFF;
     color: white;
   }
+  #playButton {
+    display: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 <h1 id="currentTrackTitle">Video Playlist</h1>
-<video id="videoPlayer" controls autoplay>
+<video id="videoPlayer" controls>
   Your browser does not support the video tag.
 </video>
-
+<button id="playButton">Play Video</button>
 <ul id="playlist">
   <!-- Playlist items will be dynamically inserted here -->
 </ul>
@@ -57,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const videoPlayer = document.getElementById('videoPlayer');
   const playlistElement = document.getElementById('playlist');
   const currentTrackTitleElement = document.getElementById('currentTrackTitle');
+  const playButton = document.getElementById('playButton');
   let currentTrackIndex = 0;
 
   const playlist = [
@@ -91,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const track = playlist[index];
     videoPlayer.src = track.src;
     videoPlayer.load();
-    videoPlayer.play();
     currentTrackIndex = index;
     updatePlaylistHighlight();
     updateCurrentTrackTitle(track.title);
@@ -122,6 +128,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   videoPlayer.addEventListener('ended', playNextTrack);
+
+  videoPlayer.addEventListener('loadeddata', () => {
+    const playPromise = videoPlayer.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // Autoplay started successfully
+      }).catch(error => {
+        // Autoplay was prevented.
+        // Show a play button to start the video manually.
+        playButton.style.display = 'block';
+      });
+    }
+  });
+
+  playButton.addEventListener('click', () => {
+    videoPlayer.play();
+    playButton.style.display = 'none';
+  });
 
   populatePlaylist();
   loadTrack(0); // Start with the first track
